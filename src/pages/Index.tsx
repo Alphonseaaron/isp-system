@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { PackageCard } from "@/components/PackageCard";
-import { PaymentModal } from "@/components/PaymentModal";
-import { PhoneInput } from "@/components/PhoneInput";
-import { OtpInput } from "@/components/OtpInput";
+import PackageCard from "@/components/PackageCard";
+import PaymentModal from "@/components/PaymentModal";
+import PhoneInput from "@/components/PhoneInput";
+import OtpInput from "@/components/OtpInput";
 import { Package, usePackages } from "@/contexts/PackagesContext";
-import { Logo } from "@/components/Logo";
+import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 

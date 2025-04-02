@@ -187,6 +187,11 @@ const AdminPanel = () => {
     }
   };
 
+  const handleEditClick = (packageId: string) => {
+    setSelectedPackageId(packageId);
+    setIsEditPackageOpen(true);
+  };
+
   const stats = {
     totalActiveUsers: activeUsers.length,
     totalRevenue: transactions
