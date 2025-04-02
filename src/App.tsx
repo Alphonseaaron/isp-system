@@ -14,36 +14,40 @@ import { PackagesProvider, usePackages } from "./contexts/PackagesContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
-const queryClient = new QueryClient();
+// Move the QueryClient instantiation inside the component
+const App = () => {
+  // Create a client
+  const queryClient = new QueryClient();
+  
+  const WifiRouteWrapper = () => {
+    const { packages } = usePackages();
+    return <WifiLandingPage packages={packages} />;
+  };
 
-const WifiRouteWrapper = () => {
-  const { packages } = usePackages();
-  return <WifiLandingPage packages={packages} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <PackagesProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/admin" element={<AdminPanel />} />
+                  <Route path="/signin" element={<SignIn />} />
+                  <Route path="/signup" element={<SignUp />} />
+                  <Route path="/wifi" element={<WifiRouteWrapper />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </PackagesProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
 };
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <AuthProvider>
-        <PackagesProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/signup" element={<SignUp />} />
-                <Route path="/wifi" element={<WifiRouteWrapper />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </PackagesProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
 
 export default App;

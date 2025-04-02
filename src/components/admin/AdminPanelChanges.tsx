@@ -8,25 +8,25 @@ This file serves as documentation of the changes needed.
 
 // CHANGES TO IMPORT SECTION:
 // Add these imports:
-import TransactionHistory from "@/components/admin/TransactionHistory";
-import PackageForm from "@/components/admin/PackageForm";
+// import TransactionHistory from "@/components/admin/TransactionHistory";
+// import PackageForm from "@/components/admin/PackageForm";
 
 // CHANGES TO THE COMPONENT:
 // Replace the PackageForm part with this PackageForm component
 
 // Update handleAddPackage to use the new PackageForm
-const handleAddPackage = (packageData: any) => {
-  addPackage(packageData);
-  setIsAddPackageOpen(false);
-};
+// const handleAddPackage = (packageData: any) => {
+//   addPackage(packageData);
+//   setIsAddPackageOpen(false);
+// };
 
 // Update handleUpdatePackage to use the new PackageForm
-const handleUpdatePackage = (packageData: any) => {
-  if (!selectedPackageId) return;
-  updatePackage(selectedPackageId, packageData);
-  setIsEditPackageOpen(false);
-  setSelectedPackageId(null);
-};
+// const handleUpdatePackage = (packageData: any) => {
+//   if (!selectedPackageId) return;
+//   updatePackage(selectedPackageId, packageData);
+//   setIsEditPackageOpen(false);
+//   setSelectedPackageId(null);
+// };
 
 // CHANGES TO RENDER:
 // Replace the Dialog for adding a package with:
