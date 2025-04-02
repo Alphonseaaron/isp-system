@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -10,6 +9,10 @@ export interface Package {
   durationUnit: 'minutes' | 'hours' | 'days';
   description?: string;
   popular?: boolean;
+  downloadSpeed?: number;
+  uploadSpeed?: number;
+  maxDownloadSpeed?: number;
+  maxUploadSpeed?: number;
 }
 
 interface PackagesContextType {
@@ -32,6 +35,10 @@ const initialPackages: Package[] = [
     duration: 1,
     durationUnit: 'hours',
     description: 'Perfect for checking emails and quick browsing',
+    downloadSpeed: 1,
+    uploadSpeed: 0.5,
+    maxDownloadSpeed: 2,
+    maxUploadSpeed: 1
   },
   {
     id: '2',
@@ -41,6 +48,10 @@ const initialPackages: Package[] = [
     durationUnit: 'hours',
     description: 'Great for longer browsing sessions',
     popular: true,
+    downloadSpeed: 2,
+    uploadSpeed: 1,
+    maxDownloadSpeed: 5,
+    maxUploadSpeed: 2
   },
   {
     id: '3',
@@ -49,6 +60,10 @@ const initialPackages: Package[] = [
     duration: 12,
     durationUnit: 'hours',
     description: 'Ideal for work and entertainment',
+    downloadSpeed: 5,
+    uploadSpeed: 2,
+    maxDownloadSpeed: 10,
+    maxUploadSpeed: 5
   },
   {
     id: '4',
@@ -57,6 +72,10 @@ const initialPackages: Package[] = [
     duration: 1,
     durationUnit: 'days',
     description: 'Unlimited access for a full day',
+    downloadSpeed: 10,
+    uploadSpeed: 5,
+    maxDownloadSpeed: 20,
+    maxUploadSpeed: 10
   },
 ];
 

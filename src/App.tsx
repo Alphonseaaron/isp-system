@@ -7,28 +7,42 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import AdminPanel from "./pages/AdminPanel";
 import NotFound from "./pages/NotFound";
-import { PackagesProvider } from "./contexts/PackagesContext";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import WifiLandingPage from "@/components/WifiLandingPage";
+import { PackagesProvider, usePackages } from "./contexts/PackagesContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 const queryClient = new QueryClient();
 
+const WifiRouteWrapper = () => {
+  const { packages } = usePackages();
+  return <WifiLandingPage packages={packages} />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <PackagesProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/admin" element={<AdminPanel />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </PackagesProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <PackagesProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/signin" element={<SignIn />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/wifi" element={<WifiRouteWrapper />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </PackagesProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

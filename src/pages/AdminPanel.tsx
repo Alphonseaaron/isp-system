@@ -4,6 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePackages, Package } from "@/contexts/PackagesContext";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import DeviceSelector from "@/components/admin/DeviceSelector";
 import {
   Tabs,
   TabsContent,
@@ -32,7 +34,8 @@ import {
   LogOut, 
   PlusCircle,
   Pencil,
-  Trash
+  Trash,
+  Menu
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
@@ -42,6 +45,8 @@ import UserManagement from "@/components/admin/UserManagement";
 import NetworkMonitoring from "@/components/admin/NetworkMonitoring";
 import NetworkChart from "@/components/admin/NetworkChart";
 import PaymentManagement from "@/components/admin/PaymentManagement";
+import PackageForm from "@/components/admin/PackageForm";
+import TransactionHistory from "@/components/admin/TransactionHistory";
 
 // Mock user data
 const mockUsers = [
@@ -143,91 +148,35 @@ interface NewPackageFormData {
 
 const AdminPanel = () => {
   const navigate = useNavigate();
-  const { isAdmin, logout } = useAuth();
+  const { isAdmin, logout, isAuthenticated } = useAuth();
   const { packages, addPackage, updatePackage, deletePackage } = usePackages();
   
   const [isAddPackageOpen, setIsAddPackageOpen] = useState(false);
   const [isEditPackageOpen, setIsEditPackageOpen] = useState(false);
   const [selectedPackageId, setSelectedPackageId] = useState<string | null>(null);
-  const [formData, setFormData] = useState<NewPackageFormData>({
-    name: "",
-    price: "",
-    duration: "",
-    durationUnit: "hours",
-    description: "",
-    popular: false,
-  });
+  const [selectedDevice, setSelectedDevice] = useState<string>("all");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const [activeUsers, setActiveUsers] = useState(mockUsers.filter(u => u.activeSession));
   const [transactions, setTransactions] = useState(mockTransactions);
   const [allUsers, setAllUsers] = useState(mockUsers);
 
-  // Redirect if not admin
   useEffect(() => {
-    if (!isAdmin) {
+    if (!isAuthenticated) {
+      navigate("/signin");
+    } else if (!isAdmin) {
       navigate("/");
     }
-  }, [isAdmin, navigate]);
+  }, [isAuthenticated, isAdmin, navigate]);
 
-  const handleAddPackage = () => {
-    if (!formData.name || !formData.price || !formData.duration) {
-      toast({
-        title: "Invalid Form",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    addPackage({
-      name: formData.name,
-      price: parseFloat(formData.price),
-      duration: parseInt(formData.duration),
-      durationUnit: formData.durationUnit,
-      description: formData.description,
-      popular: formData.popular,
-    });
-
-    setFormData({
-      name: "",
-      price: "",
-      duration: "",
-      durationUnit: "hours",
-      description: "",
-      popular: false,
-    });
-
+  const handleAddPackage = (packageData: any) => {
+    addPackage(packageData);
     setIsAddPackageOpen(false);
   };
 
-  const handleEditClick = (packageId: string) => {
-    const pkg = packages.find((p) => p.id === packageId);
-    if (pkg) {
-      setFormData({
-        name: pkg.name,
-        price: pkg.price.toString(),
-        duration: pkg.duration.toString(),
-        durationUnit: pkg.durationUnit,
-        description: pkg.description || "",
-        popular: pkg.popular || false,
-      });
-      setSelectedPackageId(packageId);
-      setIsEditPackageOpen(true);
-    }
-  };
-
-  const handleUpdatePackage = () => {
+  const handleUpdatePackage = (packageData: any) => {
     if (!selectedPackageId) return;
-
-    updatePackage(selectedPackageId, {
-      name: formData.name,
-      price: parseFloat(formData.price),
-      duration: parseInt(formData.duration),
-      durationUnit: formData.durationUnit,
-      description: formData.description,
-      popular: formData.popular,
-    });
-
+    updatePackage(selectedPackageId, packageData);
     setIsEditPackageOpen(false);
     setSelectedPackageId(null);
   };
@@ -238,7 +187,6 @@ const AdminPanel = () => {
     }
   };
 
-  // Stats for the dashboard
   const stats = {
     totalActiveUsers: activeUsers.length,
     totalRevenue: transactions
@@ -252,17 +200,33 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b py-4 px-6 bg-white">
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      <header className="border-b py-4 px-6 bg-card">
         <div className="container mx-auto flex justify-between items-center">
-          <Logo />
+          <div className="flex items-center">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden mr-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <Logo />
+          </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/")}>
+            <DeviceSelector 
+              value={selectedDevice} 
+              onChange={setSelectedDevice} 
+              className="hidden md:flex w-[200px]"
+            />
+            <ThemeToggle />
+            <Button variant="ghost" className="hidden md:flex" onClick={() => navigate("/wifi")}>
               Client Portal
             </Button>
             <Button variant="outline" onClick={logout}>
               <LogOut className="h-4 w-4 mr-2" />
-              Logout
+              <span className="hidden md:inline">Logout</span>
             </Button>
           </div>
         </div>
@@ -276,15 +240,32 @@ const AdminPanel = () => {
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="packages">Packages</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
-            <TabsTrigger value="payments">Payments & Billing</TabsTrigger>
-            <TabsTrigger value="network">Network Monitoring</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="network">Network</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
+            <div className="md:hidden mb-4">
+              <DeviceSelector 
+                value={selectedDevice} 
+                onChange={setSelectedDevice} 
+                className="w-full"
+              />
+            </div>
             <DashboardOverview 
-              stats={stats}
-              activeUsers={activeUsers}
-              transactions={transactions}
+              stats={{
+                totalActiveUsers: activeUsers.length,
+                totalRevenue: transactions
+                  .filter((tx) => tx.status === "completed")
+                  .reduce((acc, tx) => acc + tx.amount, 0),
+                totalTransactions: transactions.filter((tx) => tx.status === "completed").length,
+                failedTransactions: transactions.filter((tx) => tx.status === "failed").length,
+                totalRegisteredUsers: allUsers.length,
+                totalBandwidthUsage: "1.2 GB",
+                systemStatus: "online" as const,
+              }}
+              activeUsers={[]} // Filter by selectedDevice in a real app
+              transactions={[]} // Filter by selectedDevice in a real app
               packages={packages}
             />
             <div className="mt-8">
@@ -293,104 +274,35 @@ const AdminPanel = () => {
           </TabsContent>
 
           <TabsContent value="packages">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <h2 className="text-xl font-bold">WiFi Packages</h2>
-              <Dialog open={isAddPackageOpen} onOpenChange={setIsAddPackageOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <PlusCircle className="h-4 w-4 mr-2" />
-                    Add Package
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New WiFi Package</DialogTitle>
-                    <DialogDescription>
-                      Create a new package to offer to your customers
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Package Name</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="price">Price (KSH)</Label>
-                        <Input
-                          id="price"
-                          type="number"
-                          value={formData.price}
-                          onChange={(e) => setFormData({...formData, price: e.target.value})}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label htmlFor="duration">Duration</Label>
-                        <div className="flex gap-2">
-                          <Input
-                            id="duration"
-                            type="number"
-                            className="flex-1"
-                            value={formData.duration}
-                            onChange={(e) => setFormData({...formData, duration: e.target.value})}
-                          />
-                          <Select
-                            value={formData.durationUnit}
-                            onValueChange={(value: "minutes" | "hours" | "days") => 
-                              setFormData({...formData, durationUnit: value})
-                            }
-                          >
-                            <SelectTrigger className="w-[120px]">
-                              <SelectValue placeholder="Unit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="minutes">Minutes</SelectItem>
-                              <SelectItem value="hours">Hours</SelectItem>
-                              <SelectItem value="days">Days</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
-                      <Input
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="popular"
-                        checked={formData.popular}
-                        onChange={(e) => setFormData({...formData, popular: e.target.checked})}
-                        className="rounded border-gray-300 text-primary focus:ring-primary"
-                      />
-                      <Label htmlFor="popular">Mark as Popular</Label>
-                    </div>
-                  </div>
-                  
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsAddPackageOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleAddPackage}>
+              <div className="flex gap-4 w-full sm:w-auto">
+                <DeviceSelector 
+                  value={selectedDevice} 
+                  onChange={setSelectedDevice} 
+                  className="flex-1 md:hidden"
+                />
+                <Dialog open={isAddPackageOpen} onOpenChange={setIsAddPackageOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <PlusCircle className="h-4 w-4 mr-2" />
                       Add Package
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add New WiFi Package</DialogTitle>
+                      <DialogDescription>
+                        Create a new package to offer to your customers
+                      </DialogDescription>
+                    </DialogHeader>
+                    <PackageForm 
+                      onSave={handleAddPackage}
+                      onCancel={() => setIsAddPackageOpen(false)}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -444,105 +356,44 @@ const AdminPanel = () => {
                     Update the selected package
                   </DialogDescription>
                 </DialogHeader>
-                
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-name">Package Name</Label>
-                    <Input
-                      id="edit-name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-price">Price (KSH)</Label>
-                      <Input
-                        id="edit-price"
-                        type="number"
-                        value={formData.price}
-                        onChange={(e) => setFormData({...formData, price: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="edit-duration">Duration</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="edit-duration"
-                          type="number"
-                          className="flex-1"
-                          value={formData.duration}
-                          onChange={(e) => setFormData({...formData, duration: e.target.value})}
-                        />
-                        <Select
-                          value={formData.durationUnit}
-                          onValueChange={(value: "minutes" | "hours" | "days") => 
-                            setFormData({...formData, durationUnit: value})
-                          }
-                        >
-                          <SelectTrigger className="w-[120px]">
-                            <SelectValue placeholder="Unit" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="minutes">Minutes</SelectItem>
-                            <SelectItem value="hours">Hours</SelectItem>
-                            <SelectItem value="days">Days</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-description">Description</Label>
-                    <Input
-                      id="edit-description"
-                      value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="edit-popular"
-                      checked={formData.popular}
-                      onChange={(e) => setFormData({...formData, popular: e.target.checked})}
-                      className="rounded border-gray-300 text-primary focus:ring-primary"
-                    />
-                    <Label htmlFor="edit-popular">Mark as Popular</Label>
-                  </div>
-                </div>
-                
-                <DialogFooter>
-                  <Button variant="outline" onClick={() => setIsEditPackageOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleUpdatePackage}>
-                    Update Package
-                  </Button>
-                </DialogFooter>
+                <PackageForm 
+                  initialData={packages.find(p => p.id === selectedPackageId)}
+                  onSave={handleUpdatePackage}
+                  onCancel={() => setIsEditPackageOpen(false)}
+                />
               </DialogContent>
             </Dialog>
           </TabsContent>
 
           <TabsContent value="users">
-            <UserManagement users={allUsers} packages={packages} />
+            <div className="md:hidden mb-4">
+              <DeviceSelector 
+                value={selectedDevice} 
+                onChange={setSelectedDevice} 
+                className="w-full"
+              />
+            </div>
+            <UserManagement users={[]} packages={packages} />
           </TabsContent>
 
           <TabsContent value="payments">
-            <PaymentManagement 
-              transactions={transactions} 
-              users={allUsers} 
+            <div className="md:hidden mb-4">
+              <DeviceSelector 
+                value={selectedDevice} 
+                onChange={setSelectedDevice} 
+                className="w-full"
+              />
+            </div>
+            <TransactionHistory 
+              transactions={[]} 
+              users={[]} 
               packages={packages} 
             />
           </TabsContent>
 
           <TabsContent value="network">
             <NetworkMonitoring 
-              activeUsers={activeUsers} 
+              activeUsers={[]} 
               packages={packages} 
             />
           </TabsContent>
