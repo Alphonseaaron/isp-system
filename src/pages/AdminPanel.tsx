@@ -1,33 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePackages, Package } from "@/contexts/PackagesContext";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { 
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -37,25 +19,29 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   LogOut, 
-  Users, 
-  Package as PackageIcon, 
-  CreditCard, 
-  Wifi, 
   PlusCircle,
   Pencil,
   Trash
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+
+// Import admin dashboard components
+import DashboardOverview from "@/components/admin/DashboardOverview";
+import UserManagement from "@/components/admin/UserManagement";
+import NetworkMonitoring from "@/components/admin/NetworkMonitoring";
+import NetworkChart from "@/components/admin/NetworkChart";
+import PaymentManagement from "@/components/admin/PaymentManagement";
 
 // Mock user data
 const mockUsers = [
@@ -134,6 +120,16 @@ const mockTransactions = [
     transactionRef: "MPESA123459",
     timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
   },
+  {
+    id: "tx5",
+    userId: "3",
+    packageId: "2",
+    amount: 50,
+    status: "completed",
+    paymentMethod: "SasaPay",
+    transactionRef: "SASA123460",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 1), // 1 hour ago
+  },
 ];
 
 interface NewPackageFormData {
@@ -164,6 +160,7 @@ const AdminPanel = () => {
   
   const [activeUsers, setActiveUsers] = useState(mockUsers.filter(u => u.activeSession));
   const [transactions, setTransactions] = useState(mockTransactions);
+  const [allUsers, setAllUsers] = useState(mockUsers);
 
   // Redirect if not admin
   useEffect(() => {
@@ -249,6 +246,9 @@ const AdminPanel = () => {
       .reduce((acc, tx) => acc + tx.amount, 0),
     totalTransactions: transactions.filter((tx) => tx.status === "completed").length,
     failedTransactions: transactions.filter((tx) => tx.status === "failed").length,
+    totalRegisteredUsers: allUsers.length,
+    totalBandwidthUsage: "1.2 GB",
+    systemStatus: "online" as const,
   };
 
   return (
@@ -272,152 +272,23 @@ const AdminPanel = () => {
         <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
 
         <Tabs defaultValue="dashboard">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex flex-wrap">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="packages">Packages</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
+            <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="payments">Payments & Billing</TabsTrigger>
+            <TabsTrigger value="network">Network Monitoring</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-muted-foreground">Active Users</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <Users className="h-5 w-5 text-primary mr-2" />
-                    <div className="text-2xl font-bold">{stats.totalActiveUsers}</div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-muted-foreground">Total Revenue</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <CreditCard className="h-5 w-5 text-primary mr-2" />
-                    <div className="text-2xl font-bold">KSH {stats.totalRevenue}</div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-muted-foreground">Success Transactions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <CreditCard className="h-5 w-5 text-green-500 mr-2" />
-                    <div className="text-2xl font-bold">{stats.totalTransactions}</div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm text-muted-foreground">Failed Transactions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <CreditCard className="h-5 w-5 text-destructive mr-2" />
-                    <div className="text-2xl font-bold">{stats.failedTransactions}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="space-y-6">
-              <div>
-                <h2 className="text-xl font-bold mb-4">Active Sessions</h2>
-                <Card>
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Phone</TableHead>
-                          <TableHead>Package</TableHead>
-                          <TableHead>Start Time</TableHead>
-                          <TableHead>End Time</TableHead>
-                          <TableHead>Time Left</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {activeUsers.map((user) => {
-                          const pkg = packages.find(p => p.id === user.activeSession?.packageId);
-                          if (!user.activeSession || !pkg) return null;
-                          
-                          const endTime = new Date(user.activeSession.endTime);
-                          const now = new Date();
-                          const timeLeft = Math.max(0, Math.floor((endTime.getTime() - now.getTime()) / 1000 / 60));
-                          
-                          return (
-                            <TableRow key={user.id}>
-                              <TableCell>{user.phoneNumber}</TableCell>
-                              <TableCell>{pkg.name}</TableCell>
-                              <TableCell>
-                                {new Date(user.activeSession.startTime).toLocaleString()}
-                              </TableCell>
-                              <TableCell>
-                                {endTime.toLocaleString()}
-                              </TableCell>
-                              <TableCell>
-                                {timeLeft} min
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div>
-                <h2 className="text-xl font-bold mb-4">Recent Transactions</h2>
-                <Card>
-                  <CardContent className="p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Phone</TableHead>
-                          <TableHead>Package</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Time</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {transactions.slice(0, 5).map((tx) => {
-                          const user = mockUsers.find(u => u.id === tx.userId);
-                          const pkg = packages.find(p => p.id === tx.packageId);
-                          
-                          return (
-                            <TableRow key={tx.id}>
-                              <TableCell>{user?.phoneNumber || "Unknown"}</TableCell>
-                              <TableCell>{pkg?.name || "Unknown Package"}</TableCell>
-                              <TableCell>KSH {tx.amount}</TableCell>
-                              <TableCell>
-                                <span className={`px-2 py-1 rounded-full text-xs ${
-                                  tx.status === "completed" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                                }`}>
-                                  {tx.status}
-                                </span>
-                              </TableCell>
-                              <TableCell>
-                                {tx.timestamp.toLocaleString()}
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </div>
+            <DashboardOverview 
+              stats={stats}
+              activeUsers={activeUsers}
+              transactions={transactions}
+              packages={packages}
+            />
+            <div className="mt-8">
+              <NetworkChart />
             </div>
           </TabsContent>
 
@@ -524,25 +395,27 @@ const AdminPanel = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {packages.map((pkg) => (
-                <Card key={pkg.id}>
-                  <CardHeader>
-                    <CardTitle className="flex justify-between items-center">
-                      <span>{pkg.name}</span>
+                <div 
+                  key={pkg.id}
+                  className="bg-white rounded-lg border shadow-sm overflow-hidden"
+                >
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-lg font-bold">{pkg.name}</h3>
                       {pkg.popular && (
                         <span className="bg-secondary text-white text-xs rounded-full px-2 py-1">
                           Popular
                         </span>
                       )}
-                    </CardTitle>
-                    <CardDescription>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
                       {pkg.duration} {pkg.durationUnit}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
+                    </p>
                     <div className="text-3xl font-bold mb-2">KSH {pkg.price}</div>
                     <p className="text-sm text-muted-foreground">{pkg.description}</p>
-                  </CardContent>
-                  <CardFooter className="flex justify-end gap-2">
+                  </div>
+                  
+                  <div className="border-t px-6 py-4 bg-gray-50 flex justify-end gap-2">
                     <Button 
                       variant="outline" 
                       size="icon"
@@ -558,8 +431,8 @@ const AdminPanel = () => {
                     >
                       <Trash className="h-4 w-4" />
                     </Button>
-                  </CardFooter>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
 
@@ -656,101 +529,22 @@ const AdminPanel = () => {
           </TabsContent>
 
           <TabsContent value="users">
-            <h2 className="text-xl font-bold mb-6">User Management</h2>
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Phone Number</TableHead>
-                      <TableHead>Last Active</TableHead>
-                      <TableHead>Total Sessions</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>{user.phoneNumber}</TableCell>
-                        <TableCell>
-                          {user.lastActive.toLocaleString()}
-                        </TableCell>
-                        <TableCell>{user.totalSessions}</TableCell>
-                        <TableCell>
-                          {user.activeSession ? (
-                            <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">
-                              Active
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
-                              Inactive
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline">
-                              <Wifi className="h-4 w-4 mr-2" />
-                              {user.activeSession ? "Disconnect" : "Grant Access"}
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <UserManagement users={allUsers} packages={packages} />
           </TabsContent>
 
-          <TabsContent value="transactions">
-            <h2 className="text-xl font-bold mb-6">Transaction History</h2>
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Transaction ID</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Package</TableHead>
-                      <TableHead>Amount</TableHead>
-                      <TableHead>Payment Method</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Time</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {transactions.map((tx) => {
-                      const user = mockUsers.find(u => u.id === tx.userId);
-                      const pkg = packages.find(p => p.id === tx.packageId);
-                      
-                      return (
-                        <TableRow key={tx.id}>
-                          <TableCell className="font-mono text-xs">
-                            {tx.transactionRef}
-                          </TableCell>
-                          <TableCell>{user?.phoneNumber || "Unknown"}</TableCell>
-                          <TableCell>{pkg?.name || "Unknown Package"}</TableCell>
-                          <TableCell>KSH {tx.amount}</TableCell>
-                          <TableCell>{tx.paymentMethod}</TableCell>
-                          <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              tx.status === "completed" ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
-                            }`}>
-                              {tx.status}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            {tx.timestamp.toLocaleString()}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+          <TabsContent value="payments">
+            <PaymentManagement 
+              transactions={transactions} 
+              users={allUsers} 
+              packages={packages} 
+            />
+          </TabsContent>
+
+          <TabsContent value="network">
+            <NetworkMonitoring 
+              activeUsers={activeUsers} 
+              packages={packages} 
+            />
           </TabsContent>
         </Tabs>
       </main>
