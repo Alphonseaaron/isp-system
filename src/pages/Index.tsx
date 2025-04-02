@@ -4,8 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import PackageCard from "@/components/PackageCard";
 import PaymentModal from "@/components/PaymentModal";
-import PhoneInput from "@/components/PhoneInput";
-import OtpInput from "@/components/OtpInput";
 import { Package, usePackages } from "@/contexts/PackagesContext";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -17,6 +15,7 @@ const Index = () => {
   const { packages } = usePackages();
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   useEffect(() => {
     if (isAdmin) {
@@ -27,6 +26,11 @@ const Index = () => {
   const handleSelectPackage = (pkg: Package) => {
     setSelectedPackage(pkg);
     setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowPaymentModal(false);
+    // You could show a success message or redirect
   };
 
   return (
@@ -62,7 +66,12 @@ const Index = () => {
           {packages.map((pkg) => (
             <PackageCard
               key={pkg.id}
-              pkg={pkg}
+              name={pkg.name}
+              price={pkg.price}
+              duration={pkg.duration}
+              durationUnit={pkg.durationUnit}
+              description={pkg.description || ""}
+              popular={pkg.popular}
               onSelectPackage={() => handleSelectPackage(pkg)}
             />
           ))}
@@ -74,6 +83,8 @@ const Index = () => {
           isOpen={showPaymentModal}
           onClose={() => setShowPaymentModal(false)}
           selectedPackage={selectedPackage}
+          phoneNumber={phoneNumber}
+          onSuccess={handlePaymentSuccess}
         />
       )}
 

@@ -25,7 +25,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (user) {
         setIsAuthenticated(true);
         setUserEmail(user.email);
-        setIsAdmin(true); // In a real app, this would check user roles in Firestore
+        
+        // Super admin check (in a real app, this would check user roles in Firestore)
+        // For now, we're hard-coding alphonsemumbo@gmail.com as a super admin
+        if (user.email === "alphonsemumbo@gmail.com") {
+          setIsAdmin(true);
+        } else {
+          // Check if the user is a regular admin (in a real app, this would query Firestore)
+          setIsAdmin(true); // For demo purposes, all authenticated users are admins
+        }
       } else {
         setIsAuthenticated(false);
         setUserEmail(null);
