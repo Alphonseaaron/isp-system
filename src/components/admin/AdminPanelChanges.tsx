@@ -1,6 +1,8 @@
 
 // This is a partial file that contains changes to be manually added to AdminPanel.tsx
 
+{/* Wrap everything in a fragment to fix the JSX parent element error */}
+<>
 // CHANGES TO IMPORT SECTION:
 // Add these imports:
 import TransactionHistory from "@/components/admin/TransactionHistory";
@@ -71,3 +73,4 @@ const handleUpdatePackage = (packageData: any) => {
     packages={packages} 
   />
 </TabsContent>
+</>
