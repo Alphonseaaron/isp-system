@@ -1,8 +1,11 @@
 
 // This is a partial file that contains changes to be manually added to AdminPanel.tsx
 
-{/* Wrap everything in a fragment to fix the JSX parent element error */}
-<>
+/*
+These changes need to be manually integrated into AdminPanel.tsx.
+This file serves as documentation of the changes needed.
+*/
+
 // CHANGES TO IMPORT SECTION:
 // Add these imports:
 import TransactionHistory from "@/components/admin/TransactionHistory";
@@ -27,6 +30,7 @@ const handleUpdatePackage = (packageData: any) => {
 
 // CHANGES TO RENDER:
 // Replace the Dialog for adding a package with:
+/*
 <Dialog open={isAddPackageOpen} onOpenChange={setIsAddPackageOpen}>
   <DialogTrigger asChild>
     <Button>
@@ -47,8 +51,10 @@ const handleUpdatePackage = (packageData: any) => {
     />
   </DialogContent>
 </Dialog>
+*/
 
 // Replace the edit package Dialog with:
+/*
 <Dialog open={isEditPackageOpen} onOpenChange={setIsEditPackageOpen}>
   <DialogContent>
     <DialogHeader>
@@ -64,8 +70,10 @@ const handleUpdatePackage = (packageData: any) => {
     />
   </DialogContent>
 </Dialog>
+*/
 
 // Replace the payments tab content with:
+/*
 <TabsContent value="payments">
   <TransactionHistory 
     transactions={transactions} 
@@ -73,4 +81,4 @@ const handleUpdatePackage = (packageData: any) => {
     packages={packages} 
   />
 </TabsContent>
-</>
+*/
