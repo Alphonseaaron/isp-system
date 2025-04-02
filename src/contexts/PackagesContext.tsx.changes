@@ -1,0 +1,70 @@
+
+// This is a partial file that contains changes to be manually added to PackagesContext.tsx
+
+// Update the Package interface to include bandwidth limits
+export interface Package {
+  id: string;
+  name: string;
+  price: number;
+  duration: number;
+  durationUnit: "minutes" | "hours" | "days";
+  description?: string;
+  popular?: boolean;
+  downloadSpeed?: number;
+  uploadSpeed?: number;
+  maxDownloadSpeed?: number;
+  maxUploadSpeed?: number;
+}
+
+// Update the default packages to include bandwidth limits
+const defaultPackages: Package[] = [
+  {
+    id: "1",
+    name: "Basic",
+    price: 20,
+    duration: 1,
+    durationUnit: "hours",
+    description: "Basic internet access for quick browsing",
+    downloadSpeed: 1,
+    uploadSpeed: 0.5,
+    maxDownloadSpeed: 2,
+    maxUploadSpeed: 1
+  },
+  {
+    id: "2",
+    name: "Standard",
+    price: 50,
+    duration: 3,
+    durationUnit: "hours",
+    description: "Standard internet access for regular browsing and social media",
+    popular: true,
+    downloadSpeed: 2,
+    uploadSpeed: 1,
+    maxDownloadSpeed: 5,
+    maxUploadSpeed: 2
+  },
+  {
+    id: "3",
+    name: "Premium",
+    price: 100,
+    duration: 6,
+    durationUnit: "hours",
+    description: "Premium internet access for streaming and downloads",
+    downloadSpeed: 5,
+    uploadSpeed: 2,
+    maxDownloadSpeed: 10,
+    maxUploadSpeed: 5
+  },
+  {
+    id: "4",
+    name: "Ultra",
+    price: 150,
+    duration: 12,
+    durationUnit: "hours",
+    description: "Ultra-fast internet access for heavy usage",
+    downloadSpeed: 10,
+    uploadSpeed: 5,
+    maxDownloadSpeed: 20,
+    maxUploadSpeed: 10
+  }
+];

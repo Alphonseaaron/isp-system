@@ -10,6 +10,10 @@ interface StatsCardProps {
   iconColor?: string;
   trend?: 'up' | 'down' | 'neutral';
   trendValue?: string;
+  bgColor?: string;
+  labelColor?: string;
+  valueColor?: string;
+  showShadow?: boolean;
 }
 
 const StatsCard = ({
@@ -19,7 +23,11 @@ const StatsCard = ({
   description,
   iconColor = "text-primary",
   trend,
-  trendValue
+  trendValue,
+  bgColor = "bg-white",
+  labelColor = "text-muted-foreground",
+  valueColor = "text-foreground",
+  showShadow = true
 }: StatsCardProps) => {
   const getTrendIcon = () => {
     if (!trend) return null;
@@ -49,9 +57,9 @@ const StatsCard = ({
   };
 
   return (
-    <Card className="hover:shadow-md transition-all">
+    <Card className={`${bgColor} transition-all ${showShadow ? 'hover:shadow-md' : ''}`}>
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm text-muted-foreground">
+        <CardTitle className={`text-sm ${labelColor}`}>
           {title}
         </CardTitle>
       </CardHeader>
@@ -59,7 +67,7 @@ const StatsCard = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className={`mr-2 p-2 rounded-lg bg-primary/10 ${iconColor}`}>{icon}</div>
-            <div className="text-2xl font-bold">{value}</div>
+            <div className={`text-2xl font-bold ${valueColor}`}>{value}</div>
           </div>
           {getTrendIcon()}
         </div>
