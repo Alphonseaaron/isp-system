@@ -68,7 +68,7 @@ const PaymentModal = ({
       clientSecret: "PBiZn6FcsUBayeeN9Yo7QF260aiJg1PBedYC77H44qTG94Alna2F5wJf7Lp1j4LldvH8OpXp6pmjVVRpz7iVFyyG0Xju6cr5fWOHaePUvqwp6c95jckWy0yYpjZC4VWy"
     };
     
-    // Simulate payment processing
+    // For demo purposes, just simulate successful payment after a delay
     setTimeout(() => {
       setStatus("success");
       toast({
@@ -84,17 +84,13 @@ const PaymentModal = ({
     }, 3000);
   };
 
-  const handleInitiatePayment = () => {
-    initiatePayment();
-  };
-
   const renderContent = () => {
     switch (status) {
       case "pending":
         return (
           <>
             <DialogHeader>
-              <DialogTitle>Confirm Payment</DialogTitle>
+              <DialogTitle>Complete Payment</DialogTitle>
               <DialogDescription>
                 Select a payment method and proceed with your payment.
               </DialogDescription>
@@ -146,7 +142,7 @@ const PaymentModal = ({
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={onClose}>Cancel</Button>
-              <Button onClick={handleInitiatePayment}>Pay Now</Button>
+              <Button onClick={initiatePayment}>Pay Now</Button>
             </DialogFooter>
           </>
         );
@@ -184,7 +180,7 @@ const PaymentModal = ({
             </DialogHeader>
             <DialogFooter className="mt-4">
               <Button variant="outline" onClick={onClose}>Cancel</Button>
-              <Button onClick={handleInitiatePayment}>Try Again</Button>
+              <Button onClick={initiatePayment}>Try Again</Button>
             </DialogFooter>
           </>
         );

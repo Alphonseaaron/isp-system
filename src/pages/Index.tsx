@@ -71,8 +71,8 @@ const Index = () => {
     }
     
     setPhoneError("");
-    await loginWithPhone(phone);
-    setStep("otp");
+    // For demo purposes, we'll skip the OTP verification and show payment modal directly
+    setShowPaymentModal(true);
   };
 
   const handleOtpSubmit = async () => {
@@ -137,6 +137,11 @@ const Index = () => {
     setOtp("");
   };
 
+  const handleAdminLogin = () => {
+    // For demo purposes, directly log in as admin
+    verifyCode('123456');
+  };
+
   const renderContent = () => {
     if (packagesLoading || authLoading) {
       return (
@@ -171,9 +176,16 @@ const Index = () => {
               ))}
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex justify-center gap-4">
               <Button size="lg" onClick={handleContinue}>
                 Continue
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                onClick={handleAdminLogin}
+              >
+                Admin Login
               </Button>
             </div>
           </div>
@@ -187,7 +199,7 @@ const Index = () => {
                 Enter Your Phone Number
               </h1>
               <p className="text-muted-foreground">
-                We'll send a verification code to this number
+                We'll use this to process your payment
               </p>
             </div>
 
@@ -199,7 +211,7 @@ const Index = () => {
 
             <div className="flex flex-col gap-2">
               <Button onClick={handlePhoneSubmit}>
-                Send Verification Code
+                Continue to Payment
               </Button>
               <Button variant="ghost" onClick={() => setStep("select")}>
                 Back
