@@ -20,12 +20,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import PhoneInput from "@/components/PhoneInput";
 
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedPackage: Package | null;
   phoneNumber: string;
+  onPhoneNumberChange: (value: string) => void;
   onSuccess: (packageId: string) => void;
 }
 
@@ -37,11 +39,13 @@ const PaymentModal = ({
   onClose,
   selectedPackage,
   phoneNumber,
+  onPhoneNumberChange,
   onSuccess,
 }: PaymentModalProps) => {
   const [status, setStatus] = useState<PaymentStatus>("pending");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mpesa");
 
+  // Guard clause to prevent errors when selectedPackage is null
   if (!selectedPackage) return null;
 
   const formatPhoneNumber = (value: string) => {

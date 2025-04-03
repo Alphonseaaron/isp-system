@@ -18,6 +18,12 @@ const PackageCard = ({
   onSelect,
   onPurchase,
 }: PackageCardProps) => {
+  // Guard clause to prevent errors when pkg is undefined
+  if (!pkg) {
+    console.warn("Package is undefined in PackageCard");
+    return null;
+  }
+  
   const [isHovered, setIsHovered] = useState(false);
 
   const formattedDuration = () => {

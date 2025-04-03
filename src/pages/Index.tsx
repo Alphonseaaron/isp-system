@@ -8,11 +8,12 @@ import { Package, usePackages } from "@/contexts/PackagesContext";
 import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { toast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const { isAuthenticated, isAdmin, userEmail } = useAuth();
   const navigate = useNavigate();
-  const { packages } = usePackages();
+  const { packages, loading } = usePackages();
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -24,13 +25,25 @@ const Index = () => {
   }, [isAdmin, navigate]);
 
   const handleSelectPackage = (pkg: Package) => {
+    if (!pkg) {
+      toast({
+        title: "Error",
+        description: "Unable to select package. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setSelectedPackage(pkg);
     setShowPaymentModal(true);
   };
 
   const handlePaymentSuccess = () => {
     setShowPaymentModal(false);
-    // You could show a success message or redirect
+    toast({
+      title: "Success",
+      description: "Your payment was successful. Enjoy your WiFi access!",
+    });
   };
 
   return (
@@ -62,15 +75,21 @@ const Index = () => {
           </p>
         </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
-            <PackageCard
-              key={pkg.id}
-              package={pkg}
-              onPurchase={() => handleSelectPackage(pkg)}
-            />
-          ))}
-        </section>
+        {loading ? (
+          <div className="text-center py-12">Loading packages...</div>
+        ) : packages.length === 0 ? (
+          <div className="text-center py-12">No packages available at the moment.</div>
+        ) : (
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {packages.map((pkg) => (
+              <PackageCard
+                key={pkg.id}
+                package={pkg}
+                onPurchase={() => handleSelectPackage(pkg)}
+              />
+            ))}
+          </section>
+        )}
       </main>
 
       {selectedPackage && (
