@@ -1,0 +1,18 @@
+
+// This is a partial file that contains changes to be manually added to PaymentModal.tsx
+
+// Update the props interface to include onPhoneNumberChange
+interface PaymentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedPackage: Package;
+  phoneNumber: string;
+  onPhoneNumberChange: (value: string) => void;
+  onSuccess: () => void;
+}
+
+// Update the PhoneInput component usage
+<PhoneInput 
+  value={phoneNumber} 
+  onChange={onPhoneNumberChange} 
+/>

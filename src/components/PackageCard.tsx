@@ -73,7 +73,7 @@ const PackageCard = ({
         <Button 
           variant="outline" 
           className="w-full"
-          onClick={() => onSelect && onSelect(pkg)}
+          onClick={() => onPurchase && onPurchase(pkg)}
         >
           Select
         </Button>

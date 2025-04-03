@@ -66,13 +66,8 @@ const Index = () => {
           {packages.map((pkg) => (
             <PackageCard
               key={pkg.id}
-              name={pkg.name}
-              price={pkg.price}
-              duration={pkg.duration}
-              durationUnit={pkg.durationUnit}
-              description={pkg.description || ""}
-              popular={pkg.popular}
-              onSelectPackage={() => handleSelectPackage(pkg)}
+              package={pkg}
+              onPurchase={() => handleSelectPackage(pkg)}
             />
           ))}
         </section>
@@ -84,6 +79,7 @@ const Index = () => {
           onClose={() => setShowPaymentModal(false)}
           selectedPackage={selectedPackage}
           phoneNumber={phoneNumber}
+          onPhoneNumberChange={setPhoneNumber}
           onSuccess={handlePaymentSuccess}
         />
       )}
