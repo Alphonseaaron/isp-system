@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Package } from "@/contexts/PackagesContext";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, Phone } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import PhoneInput from "@/components/PhoneInput";
 
@@ -81,9 +81,9 @@ const PaymentModal = ({
         return (
           <>
             <DialogHeader>
-              <DialogTitle>Complete Payment with M-Pesa</DialogTitle>
+              <DialogTitle>M-Pesa Payment</DialogTitle>
               <DialogDescription>
-                Enter your phone number to receive an M-Pesa payment request.
+                Enter your phone number to receive an M-Pesa payment request
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
@@ -105,28 +105,32 @@ const PaymentModal = ({
               </div>
 
               <div className="space-y-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Phone className="text-green-600 h-5 w-5" />
+                  <span className="font-medium">Pay with M-Pesa</span>
+                </div>
                 <PhoneInput 
                   value={phoneNumber} 
                   onChange={onPhoneNumberChange} 
                 />
                 <p className="text-xs text-muted-foreground">
-                  You will receive an M-Pesa prompt on this number.
+                  You will receive an M-Pesa prompt on this number
                 </p>
               </div>
               
-              <div className="bg-yellow-50 text-yellow-800 p-3 rounded-md text-sm">
-                <p className="font-medium">M-Pesa Payment Instructions:</p>
+              <div className="bg-green-50 text-green-800 p-3 rounded-md text-sm">
                 <p className="mt-1">
                   1. Enter your phone number above<br />
                   2. Click "Pay Now" to receive an M-Pesa STK push<br />
-                  3. Enter your M-Pesa PIN when prompted on your phone<br />
-                  4. Wait for confirmation message
+                  3. Enter your M-Pesa PIN when prompted on your phone
                 </p>
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={onClose}>Cancel</Button>
-              <Button onClick={initiatePayment}>Pay Now</Button>
+              <Button onClick={initiatePayment} className="bg-green-600 hover:bg-green-700">
+                Pay Now with M-Pesa
+              </Button>
             </DialogFooter>
           </>
         );
@@ -137,7 +141,7 @@ const PaymentModal = ({
             <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
             <DialogTitle className="text-center mb-2">Processing Payment</DialogTitle>
             <DialogDescription className="text-center">
-              Please check your phone for the M-Pesa prompt and enter your PIN.
+              Please check your phone for the M-Pesa prompt and enter your PIN
             </DialogDescription>
           </div>
         );
