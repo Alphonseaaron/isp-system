@@ -1,5 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
+import { getPackages, savePackage, updatePackage, deletePackage } from '@/services/firebase';
 
 export interface Package {
   id: string;
@@ -26,7 +28,7 @@ interface PackagesContextType {
 
 const PackagesContext = createContext<PackagesContextType | undefined>(undefined);
 
-// Mock data for packages
+// Mock data for packages - will be used if Firestore fetch fails
 const initialPackages: Package[] = [
   {
     id: '1',
@@ -80,25 +82,60 @@ const initialPackages: Package[] = [
 ];
 
 export const PackagesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [packages, setPackages] = useState<Package[]>(initialPackages);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [packages, setPackages] = useState<Package[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // In a real app, this would fetch from Firebase
+  // Fetch packages from Firestore
   useEffect(() => {
-    // Simulating API call
-    setLoading(true);
-    setTimeout(() => {
-      setPackages(initialPackages);
-      setLoading(false);
-    }, 500);
+    const fetchPackages = async () => {
+      try {
+        setLoading(true);
+        const firestorePackages = await getPackages();
+        
+        if (firestorePackages && firestorePackages.length > 0) {
+          // Convert Firestore data to Package type
+          const typedPackages = firestorePackages.map(pkg => ({
+            id: pkg.id,
+            name: pkg.name,
+            price: Number(pkg.price),
+            duration: Number(pkg.duration),
+            durationUnit: pkg.durationUnit as 'minutes' | 'hours' | 'days',
+            description: pkg.description,
+            popular: pkg.popular || false,
+            downloadSpeed: pkg.downloadSpeed ? Number(pkg.downloadSpeed) : undefined,
+            uploadSpeed: pkg.uploadSpeed ? Number(pkg.uploadSpeed) : undefined,
+            maxDownloadSpeed: pkg.maxDownloadSpeed ? Number(pkg.maxDownloadSpeed) : undefined,
+            maxUploadSpeed: pkg.maxUploadSpeed ? Number(pkg.maxUploadSpeed) : undefined,
+          }));
+          setPackages(typedPackages);
+        } else {
+          // If no packages in Firestore, use initial data
+          setPackages(initialPackages);
+        }
+      } catch (error) {
+        console.error("Error fetching packages:", error);
+        setError("Failed to load packages");
+        // Fallback to initial packages
+        setPackages(initialPackages);
+        toast({
+          title: "Warning",
+          description: "Using default packages as we couldn't connect to the database",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPackages();
   }, []);
 
-  const addPackage = (newPackage: Omit<Package, 'id'>) => {
+  const addPackageHandler = async (newPackage: Omit<Package, 'id'>) => {
     try {
-      // In a real app, this would add to Firebase
-      const id = (packages.length + 1).toString();
-      setPackages([...packages, { ...newPackage, id }]);
+      setLoading(true);
+      const addedPackage = await savePackage(newPackage);
+      setPackages(prev => [...prev, addedPackage as Package]);
       toast({
         title: "Success",
         description: "Package added successfully",
@@ -110,16 +147,17 @@ export const PackagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         description: "Failed to add package",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const updatePackage = (id: string, packageData: Partial<Package>) => {
+  const updatePackageHandler = async (id: string, packageData: Partial<Package>) => {
     try {
-      // In a real app, this would update in Firebase
-      setPackages(
-        packages.map((pkg) =>
-          pkg.id === id ? { ...pkg, ...packageData } : pkg
-        )
+      setLoading(true);
+      await updatePackage(id, packageData);
+      setPackages(prev => 
+        prev.map(pkg => pkg.id === id ? { ...pkg, ...packageData } : pkg)
       );
       toast({
         title: "Success",
@@ -132,13 +170,16 @@ export const PackagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         description: "Failed to update package",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deletePackage = (id: string) => {
+  const deletePackageHandler = async (id: string) => {
     try {
-      // In a real app, this would delete from Firebase
-      setPackages(packages.filter((pkg) => pkg.id !== id));
+      setLoading(true);
+      await deletePackage(id);
+      setPackages(prev => prev.filter(pkg => pkg.id !== id));
       toast({
         title: "Success",
         description: "Package deleted successfully",
@@ -150,6 +191,8 @@ export const PackagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         description: "Failed to delete package",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -159,9 +202,9 @@ export const PackagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         packages,
         loading,
         error,
-        addPackage,
-        updatePackage,
-        deletePackage,
+        addPackage: addPackageHandler,
+        updatePackage: updatePackageHandler,
+        deletePackage: deletePackageHandler,
       }}
     >
       {children}

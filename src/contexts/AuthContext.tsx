@@ -1,7 +1,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChange, logoutUser } from "@/services/firebase";
+import { onAuthStateChange, logoutUser, db } from "@/services/firebase";
 import { toast } from "@/components/ui/use-toast";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export interface AdminDetails {
   companyName?: string;
@@ -29,34 +30,84 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChange((user) => {
+    const unsubscribe = onAuthStateChange(async (user) => {
       if (user) {
         setIsAuthenticated(true);
         setUserEmail(user.email);
         
-        // Super admin check (in a real app, this would check user roles in Firestore)
-        // For now, we're hard-coding alphonsemumbo@gmail.com as a super admin
-        if (user.email === "alphonsemumbo@gmail.com") {
-          setIsAdmin(true);
-          setAdminDetails({
-            companyName: "BREAMT",
-            isActive: true
-          });
-        } else {
-          // Check if the user is a regular admin (in a real app, this would query Firestore)
-          setIsAdmin(true); // For demo purposes, all authenticated users are admins
+        try {
+          // Check if user has an admin profile in Firestore
+          const userDocRef = doc(db, "admins", user.uid);
+          const userDoc = await getDoc(userDocRef);
           
-          // Mock admin details for regular admins
-          // In a real app, this would be fetched from Firestore
-          if (user.email?.includes("admin")) {
+          if (userDoc.exists()) {
+            // User has admin data in Firestore
+            const userData = userDoc.data();
+            setIsAdmin(true);
             setAdminDetails({
-              companyName: user.email.split("@")[0].replace("admin", "").toUpperCase() + " Networks",
-              subscriptionTier: "Premium",
+              companyName: userData.companyName || "BREAMT",
+              subscriptionTier: userData.subscriptionTier,
+              isActive: userData.isActive !== false // Default to true if not specified
+            });
+          } else {
+            // Super admin check (in a real app, this would check user roles in Firestore)
+            // For now, we're hard-coding alphonsemumbo@gmail.com as a super admin
+            if (user.email === "alphonsemumbo@gmail.com") {
+              setIsAdmin(true);
+              setAdminDetails({
+                companyName: "BREAMT",
+                isActive: true
+              });
+              
+              // Create admin entry for super admin if it doesn't exist
+              await setDoc(userDocRef, {
+                email: user.email,
+                companyName: "BREAMT",
+                isActive: true,
+                role: "superadmin",
+                createdAt: new Date()
+              });
+            } else if (user.email?.includes("admin")) {
+              // Regular admin setup for demo purposes
+              setIsAdmin(true);
+              
+              const companyName = user.email.split("@")[0].replace("admin", "").toUpperCase() + " Networks";
+              setAdminDetails({
+                companyName: companyName,
+                subscriptionTier: "Premium",
+                isActive: true
+              });
+              
+              // Create admin entry
+              await setDoc(userDocRef, {
+                email: user.email,
+                companyName: companyName,
+                subscriptionTier: "Premium",
+                isActive: true,
+                role: "admin",
+                createdAt: new Date()
+              });
+            } else {
+              // Regular user
+              setIsAdmin(false);
+              setAdminDetails(null);
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching admin details:", error);
+          // Fallback to basic authentication
+          if (user.email === "alphonsemumbo@gmail.com") {
+            setIsAdmin(true);
+            setAdminDetails({
+              companyName: "BREAMT",
               isActive: true
             });
+          } else {
+            setIsAdmin(user.email?.includes("admin") || false);
           }
         }
       } else {
+        // No user logged in
         setIsAuthenticated(false);
         setUserEmail(null);
         setIsAdmin(false);

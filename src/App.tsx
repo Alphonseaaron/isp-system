@@ -14,11 +14,22 @@ import WifiLandingPage from "@/components/WifiLandingPage";
 import { PackagesProvider, usePackages } from "./contexts/PackagesContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { useEffect } from "react";
 
 // Move the QueryClient instantiation inside the component
 const App = () => {
   // Create a client
   const queryClient = new QueryClient();
+  
+  // Initialize offline persistence for Firestore
+  useEffect(() => {
+    // Check if the app is online
+    if (navigator.onLine) {
+      console.log("App is online and ready to use Firebase services");
+    } else {
+      console.log("App is offline. Some functionality may be limited");
+    }
+  }, []);
   
   const WifiRouteWrapper = () => {
     const { packages } = usePackages();

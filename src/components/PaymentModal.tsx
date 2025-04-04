@@ -13,6 +13,7 @@ import { Package } from "@/contexts/PackagesContext";
 import { Loader2, CheckCircle2, Phone } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import PhoneInput from "@/components/PhoneInput";
+import { saveTransaction } from "@/services/firebase";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -51,28 +52,47 @@ const PaymentModal = ({
     
     setStatus("processing");
     
-    // In a real implementation, we would call the M-Pesa API here
-    // For M-Pesa STK Push integration, we would use the Daraja API
-    // This would include:
-    // 1. Initiating the STK push
-    // 2. Sending the payment request to the user's phone
-    // 3. Waiting for confirmation from M-Pesa
-    
-    // For demo purposes, just simulate successful payment after a delay
-    setTimeout(() => {
-      setStatus("success");
-      toast({
-        title: "Payment Successful",
-        description: `You now have access to WiFi!`,
+    try {
+      // Save transaction to Firestore
+      await saveTransaction({
+        packageId: selectedPackage.id,
+        packageName: selectedPackage.name,
+        amount: selectedPackage.price,
+        phoneNumber: phoneNumber,
+        paymentMethod: "M-Pesa",
       });
       
-      // After 2 seconds, close the modal and trigger success callback
+      // In a real implementation, we would call the M-Pesa API here
+      // For M-Pesa STK Push integration, we would use the Daraja API
+      // This would include:
+      // 1. Initiating the STK push
+      // 2. Sending the payment request to the user's phone
+      // 3. Waiting for confirmation from M-Pesa
+      
+      // For demo purposes, just simulate successful payment after a delay
       setTimeout(() => {
-        onSuccess();
-        setStatus("pending"); // Reset for next time
-        onClose();
-      }, 2000);
-    }, 3000);
+        setStatus("success");
+        toast({
+          title: "Payment Successful",
+          description: `You now have access to WiFi!`,
+        });
+        
+        // After 2 seconds, close the modal and trigger success callback
+        setTimeout(() => {
+          onSuccess();
+          setStatus("pending"); // Reset for next time
+          onClose();
+        }, 2000);
+      }, 3000);
+    } catch (error) {
+      console.error("Payment error:", error);
+      setStatus("failed");
+      toast({
+        title: "Payment Failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const renderContent = () => {
