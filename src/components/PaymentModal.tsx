@@ -20,7 +20,7 @@ interface PaymentModalProps {
   selectedPackage: Package | null;
   phoneNumber: string;
   onPhoneNumberChange: (value: string) => void;
-  onSuccess: (packageId: string) => void;
+  onSuccess: () => void;
 }
 
 type PaymentStatus = "pending" | "processing" | "success" | "failed";
@@ -38,20 +38,6 @@ const PaymentModal = ({
   // Guard clause to prevent errors when selectedPackage is null
   if (!selectedPackage) return null;
 
-  const formatPhoneNumber = (value: string) => {
-    if (!value) return "";
-    
-    let formatted = value;
-    if (value.length > 4) {
-      formatted = `${value.slice(0, 4)} ${value.slice(4)}`;
-    }
-    if (value.length > 7) {
-      formatted = `${formatted.slice(0, 8)} ${formatted.slice(8)}`;
-    }
-    
-    return formatted;
-  };
-
   const initiatePayment = async () => {
     // Validate phone number
     if (!phoneNumber || phoneNumber.length < 9) {
@@ -66,13 +52,11 @@ const PaymentModal = ({
     setStatus("processing");
     
     // In a real implementation, we would call the M-Pesa API here
-    // For M-Pesa integration, we would use the Daraja API
-    const mpesaConfig = {
-      consumerKey: "YOUR_CONSUMER_KEY",
-      consumerSecret: "YOUR_CONSUMER_SECRET",
-      shortCode: "YOUR_SHORT_CODE",
-      passKey: "YOUR_PASS_KEY"
-    };
+    // For M-Pesa STK Push integration, we would use the Daraja API
+    // This would include:
+    // 1. Initiating the STK push
+    // 2. Sending the payment request to the user's phone
+    // 3. Waiting for confirmation from M-Pesa
     
     // For demo purposes, just simulate successful payment after a delay
     setTimeout(() => {
@@ -84,7 +68,7 @@ const PaymentModal = ({
       
       // After 2 seconds, close the modal and trigger success callback
       setTimeout(() => {
-        onSuccess(selectedPackage.id);
+        onSuccess();
         setStatus("pending"); // Reset for next time
         onClose();
       }, 2000);
@@ -97,7 +81,7 @@ const PaymentModal = ({
         return (
           <>
             <DialogHeader>
-              <DialogTitle>Complete Payment</DialogTitle>
+              <DialogTitle>Complete Payment with M-Pesa</DialogTitle>
               <DialogDescription>
                 Enter your phone number to receive an M-Pesa payment request.
               </DialogDescription>
@@ -121,19 +105,21 @@ const PaymentModal = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Phone Number (M-Pesa)</label>
                 <PhoneInput 
                   value={phoneNumber} 
                   onChange={onPhoneNumberChange} 
                 />
+                <p className="text-xs text-muted-foreground">
+                  You will receive an M-Pesa prompt on this number.
+                </p>
               </div>
               
               <div className="bg-yellow-50 text-yellow-800 p-3 rounded-md text-sm">
-                <p className="font-medium">Payment Instructions:</p>
+                <p className="font-medium">M-Pesa Payment Instructions:</p>
                 <p className="mt-1">
                   1. Enter your phone number above<br />
-                  2. Click "Pay Now" to receive an M-Pesa prompt<br />
-                  3. Enter your M-Pesa PIN when prompted<br />
+                  2. Click "Pay Now" to receive an M-Pesa STK push<br />
+                  3. Enter your M-Pesa PIN when prompted on your phone<br />
                   4. Wait for confirmation message
                 </p>
               </div>

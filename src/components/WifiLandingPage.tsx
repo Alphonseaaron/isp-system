@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Package } from "@/contexts/PackagesContext";
 import { useNavigate } from "react-router-dom";
@@ -6,9 +5,7 @@ import { Wifi, Download, Upload, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
 import PhoneInput from "@/components/PhoneInput";
 
@@ -21,7 +18,6 @@ const WifiLandingPage = ({ packages }: WifiLandingPageProps) => {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"mpesa" | "airtel" | "sasapay">("mpesa");
 
   const popularPackage = packages.find((pkg) => pkg.popular) || packages[0];
 
@@ -31,7 +27,7 @@ const WifiLandingPage = ({ packages }: WifiLandingPageProps) => {
   };
 
   const handlePaymentSubmit = () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
+    if (!phoneNumber || phoneNumber.length < 9) {
       toast({
         title: "Invalid Phone Number",
         description: "Please enter a valid phone number",
@@ -40,10 +36,10 @@ const WifiLandingPage = ({ packages }: WifiLandingPageProps) => {
       return;
     }
 
-    // In a real implementation, this would call an API to process payment
+    // In a real implementation, this would call an API to process M-Pesa payment
     toast({
-      title: "Payment Processing",
-      description: "Your payment is being processed. You will receive an SMS shortly.",
+      title: "M-Pesa Request Sent",
+      description: "Please check your phone for the M-Pesa prompt.",
     });
     
     setIsPaymentOpen(false);
@@ -224,7 +220,7 @@ const WifiLandingPage = ({ packages }: WifiLandingPageProps) => {
       <Dialog open={isPaymentOpen} onOpenChange={setIsPaymentOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Complete Your Purchase</DialogTitle>
+            <DialogTitle>Complete Payment with M-Pesa</DialogTitle>
             <DialogDescription>
               {selectedPackage && `${selectedPackage.name} - KSH ${selectedPackage.price}`}
             </DialogDescription>
@@ -232,38 +228,20 @@ const WifiLandingPage = ({ packages }: WifiLandingPageProps) => {
           
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone Number (for payment)</Label>
               <PhoneInput value={phoneNumber} onChange={setPhoneNumber} />
+              <p className="text-xs text-muted-foreground">
+                You will receive an M-Pesa prompt on this number.
+              </p>
             </div>
             
-            <div className="space-y-2">
-              <Label>Payment Method</Label>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  type="button"
-                  variant={paymentMethod === "mpesa" ? "default" : "outline"}
-                  className="w-full"
-                  onClick={() => setPaymentMethod("mpesa")}
-                >
-                  M-Pesa
-                </Button>
-                <Button
-                  type="button"
-                  variant={paymentMethod === "airtel" ? "default" : "outline"}
-                  className="w-full"
-                  onClick={() => setPaymentMethod("airtel")}
-                >
-                  Airtel
-                </Button>
-                <Button
-                  type="button"
-                  variant={paymentMethod === "sasapay" ? "default" : "outline"}
-                  className="w-full"
-                  onClick={() => setPaymentMethod("sasapay")}
-                >
-                  SASAPay
-                </Button>
-              </div>
+            <div className="bg-yellow-50 text-yellow-800 p-3 rounded-md text-sm">
+              <p className="font-medium">M-Pesa Payment Instructions:</p>
+              <p className="mt-1">
+                1. Enter your M-Pesa phone number above<br />
+                2. Click "Pay Now" to receive an M-Pesa STK push<br />
+                3. Enter your M-Pesa PIN when prompted on your phone<br />
+                4. Wait for confirmation message
+              </p>
             </div>
           </div>
           
