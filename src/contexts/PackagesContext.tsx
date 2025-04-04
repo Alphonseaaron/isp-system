@@ -94,19 +94,19 @@ export const PackagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         const firestorePackages = await getPackages();
         
         if (firestorePackages && firestorePackages.length > 0) {
-          // Convert Firestore data to Package type
+          // Convert Firestore data to Package type and ensure all properties exist
           const typedPackages = firestorePackages.map(pkg => ({
             id: pkg.id,
-            name: pkg.name,
-            price: Number(pkg.price),
-            duration: Number(pkg.duration),
-            durationUnit: pkg.durationUnit as 'minutes' | 'hours' | 'days',
-            description: pkg.description,
-            popular: pkg.popular || false,
-            downloadSpeed: pkg.downloadSpeed ? Number(pkg.downloadSpeed) : undefined,
-            uploadSpeed: pkg.uploadSpeed ? Number(pkg.uploadSpeed) : undefined,
-            maxDownloadSpeed: pkg.maxDownloadSpeed ? Number(pkg.maxDownloadSpeed) : undefined,
-            maxUploadSpeed: pkg.maxUploadSpeed ? Number(pkg.maxUploadSpeed) : undefined,
+            name: pkg.name || '',
+            price: Number(pkg.price) || 0,
+            duration: Number(pkg.duration) || 1,
+            durationUnit: (pkg.durationUnit as 'minutes' | 'hours' | 'days') || 'hours',
+            description: pkg.description || '',
+            popular: Boolean(pkg.popular) || false,
+            downloadSpeed: pkg.downloadSpeed ? Number(pkg.downloadSpeed) : 1,
+            uploadSpeed: pkg.uploadSpeed ? Number(pkg.uploadSpeed) : 0.5,
+            maxDownloadSpeed: pkg.maxDownloadSpeed ? Number(pkg.maxDownloadSpeed) : 2,
+            maxUploadSpeed: pkg.maxUploadSpeed ? Number(pkg.maxUploadSpeed) : 1,
           }));
           setPackages(typedPackages);
         } else {
