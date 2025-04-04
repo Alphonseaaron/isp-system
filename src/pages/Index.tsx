@@ -11,7 +11,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { toast } from "@/components/ui/use-toast";
 
 const Index = () => {
-  const { isAuthenticated, isAdmin, userEmail } = useAuth();
+  const { isAuthenticated, isAdmin, userEmail, adminDetails } = useAuth();
   const navigate = useNavigate();
   const { packages, loading } = usePackages();
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
@@ -39,10 +39,36 @@ const Index = () => {
   };
 
   const handlePaymentSuccess = () => {
+    if (!selectedPackage) return;
+    
+    // Calculate end time based on package duration
+    const startTime = new Date();
+    const endTime = new Date(startTime);
+    
+    if (selectedPackage.durationUnit === 'minutes') {
+      endTime.setMinutes(endTime.getMinutes() + selectedPackage.duration);
+    } else if (selectedPackage.durationUnit === 'hours') {
+      endTime.setHours(endTime.getHours() + selectedPackage.duration);
+    } else {
+      // days
+      endTime.setDate(endTime.getDate() + selectedPackage.duration);
+    }
+    
     setShowPaymentModal(false);
     toast({
       title: "Success",
       description: "Your payment was successful. Enjoy your WiFi access!",
+    });
+    
+    // Navigate to active session page with session info
+    navigate('/active-session', { 
+      state: { 
+        sessionInfo: {
+          package: selectedPackage,
+          startTime: startTime,
+          endTime: endTime
+        }
+      }
     });
   };
 
@@ -50,7 +76,14 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <Logo />
+          {adminDetails?.companyName ? (
+            <div className="flex items-center">
+              <span className="text-xl font-bold text-primary">{adminDetails.companyName}</span>
+              <span className="text-sm ml-2 text-muted-foreground">WiFi Services</span>
+            </div>
+          ) : (
+            <Logo />
+          )}
           <div className="flex items-center gap-4">
             {isAuthenticated ? (
               <div className="text-sm text-muted-foreground">
@@ -68,7 +101,9 @@ const Index = () => {
 
       <main className="container mx-auto px-4 py-8">
         <section className="max-w-4xl mx-auto text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">BREAMT WiFi Services</h1>
+          <h1 className="text-4xl font-bold mb-4">
+            {adminDetails?.companyName ? adminDetails.companyName : "BREAMT"} WiFi Services
+          </h1>
           <p className="text-xl text-muted-foreground">
             Fast, reliable internet access for all your devices.
             Choose a package that fits your needs.
@@ -105,7 +140,7 @@ const Index = () => {
 
       <footer className="border-t mt-16">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} BREAMT WiFi Services. All rights reserved.
+          © {new Date().getFullYear()} {adminDetails?.companyName ? adminDetails.companyName : "BREAMT"} WiFi Services. All rights reserved.
         </div>
       </footer>
     </div>

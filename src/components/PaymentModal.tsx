@@ -10,16 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Package } from "@/contexts/PackagesContext";
-import { User } from "@/contexts/AuthContext";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import PhoneInput from "@/components/PhoneInput";
 
 interface PaymentModalProps {
@@ -32,7 +24,6 @@ interface PaymentModalProps {
 }
 
 type PaymentStatus = "pending" | "processing" | "success" | "failed";
-type PaymentMethod = "mpesa" | "airtel" | "sasapay";
 
 const PaymentModal = ({
   isOpen,
@@ -43,7 +34,6 @@ const PaymentModal = ({
   onSuccess,
 }: PaymentModalProps) => {
   const [status, setStatus] = useState<PaymentStatus>("pending");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("mpesa");
 
   // Guard clause to prevent errors when selectedPackage is null
   if (!selectedPackage) return null;
@@ -63,13 +53,25 @@ const PaymentModal = ({
   };
 
   const initiatePayment = async () => {
+    // Validate phone number
+    if (!phoneNumber || phoneNumber.length < 9) {
+      toast({
+        title: "Invalid Phone Number",
+        description: "Please enter a valid phone number",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setStatus("processing");
     
-    // In a real implementation, we would call the appropriate payment API here
-    // For SasaPay, we would use the clientID and Client Secret for authentication
-    const sasaPayConfig = {
-      clientID: "afaG40Rbc16YCrmvCj8LjQ6UDtUgtYJwQE0x4L2E",
-      clientSecret: "PBiZn6FcsUBayeeN9Yo7QF260aiJg1PBedYC77H44qTG94Alna2F5wJf7Lp1j4LldvH8OpXp6pmjVVRpz7iVFyyG0Xju6cr5fWOHaePUvqwp6c95jckWy0yYpjZC4VWy"
+    // In a real implementation, we would call the M-Pesa API here
+    // For M-Pesa integration, we would use the Daraja API
+    const mpesaConfig = {
+      consumerKey: "YOUR_CONSUMER_KEY",
+      consumerSecret: "YOUR_CONSUMER_SECRET",
+      shortCode: "YOUR_SHORT_CODE",
+      passKey: "YOUR_PASS_KEY"
     };
     
     // For demo purposes, just simulate successful payment after a delay
@@ -77,12 +79,13 @@ const PaymentModal = ({
       setStatus("success");
       toast({
         title: "Payment Successful",
-        description: `You now have access to BREAMT WiFi via ${paymentMethod.toUpperCase()}!`,
+        description: `You now have access to WiFi!`,
       });
       
-      // After 2 seconds, close the modal
+      // After 2 seconds, close the modal and trigger success callback
       setTimeout(() => {
         onSuccess(selectedPackage.id);
+        setStatus("pending"); // Reset for next time
         onClose();
       }, 2000);
     }, 3000);
@@ -96,7 +99,7 @@ const PaymentModal = ({
             <DialogHeader>
               <DialogTitle>Complete Payment</DialogTitle>
               <DialogDescription>
-                Select a payment method and proceed with your payment.
+                Enter your phone number to receive an M-Pesa payment request.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
@@ -111,10 +114,6 @@ const PaymentModal = ({
                     {selectedPackage.duration} {selectedPackage.durationUnit}
                   </span>
                 </div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm text-muted-foreground">Phone Number:</span>
-                  <span className="font-medium">+254 {formatPhoneNumber(phoneNumber)}</span>
-                </div>
                 <div className="flex justify-between pt-2 border-t">
                   <span className="text-sm font-medium">Total Amount:</span>
                   <span className="font-bold text-primary">KSH {selectedPackage.price}</span>
@@ -122,25 +121,20 @@ const PaymentModal = ({
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Select Payment Method</label>
-                <Select value={paymentMethod} onValueChange={(value: PaymentMethod) => setPaymentMethod(value)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select Payment Method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="mpesa">M-Pesa</SelectItem>
-                    <SelectItem value="airtel">Airtel Money</SelectItem>
-                    <SelectItem value="sasapay">SasaPay</SelectItem>
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium">Phone Number (M-Pesa)</label>
+                <PhoneInput 
+                  value={phoneNumber} 
+                  onChange={onPhoneNumberChange} 
+                />
               </div>
               
               <div className="bg-yellow-50 text-yellow-800 p-3 rounded-md text-sm">
                 <p className="font-medium">Payment Instructions:</p>
                 <p className="mt-1">
-                  1. Click "Pay Now" to initiate payment<br />
-                  2. Enter your {paymentMethod === "mpesa" ? "M-Pesa" : paymentMethod === "airtel" ? "Airtel Money" : "SasaPay"} PIN when prompted<br />
-                  3. Wait for confirmation message
+                  1. Enter your phone number above<br />
+                  2. Click "Pay Now" to receive an M-Pesa prompt<br />
+                  3. Enter your M-Pesa PIN when prompted<br />
+                  4. Wait for confirmation message
                 </p>
               </div>
             </div>
@@ -157,7 +151,7 @@ const PaymentModal = ({
             <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
             <DialogTitle className="text-center mb-2">Processing Payment</DialogTitle>
             <DialogDescription className="text-center">
-              Please enter your {paymentMethod === "mpesa" ? "M-Pesa" : paymentMethod === "airtel" ? "Airtel Money" : "SasaPay"} PIN when prompted on your phone.
+              Please check your phone for the M-Pesa prompt and enter your PIN.
             </DialogDescription>
           </div>
         );

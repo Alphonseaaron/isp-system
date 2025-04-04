@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import AdminPanel from "./pages/AdminPanel";
+import ActiveSession from "./pages/ActiveSession";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
@@ -39,6 +40,7 @@ const App = () => {
                   <Route path="/signin" element={<SignIn />} />
                   <Route path="/signup" element={<SignUp />} />
                   <Route path="/wifi" element={<WifiRouteWrapper />} />
+                  <Route path="/active-session" element={<ActiveSession />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
