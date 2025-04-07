@@ -17,10 +17,37 @@ const Index = () => {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [activeSessionInfo, setActiveSessionInfo] = useState<{
+    package: Package;
+    startTime: Date;
+    endTime: Date;
+  } | null>(null);
 
   useEffect(() => {
     if (isAdmin) {
       navigate("/admin");
+    }
+    
+    // Check for active session in localStorage
+    const savedSession = localStorage.getItem('wifiSessionInfo');
+    if (savedSession) {
+      try {
+        const parsedSession = JSON.parse(savedSession);
+        // Convert string dates back to Date objects
+        parsedSession.startTime = new Date(parsedSession.startTime);
+        parsedSession.endTime = new Date(parsedSession.endTime);
+        
+        // Only set as active if the session hasn't expired
+        if (new Date() < new Date(parsedSession.endTime)) {
+          setActiveSessionInfo(parsedSession);
+        } else {
+          // Clear expired session
+          localStorage.removeItem('wifiSessionInfo');
+        }
+      } catch (error) {
+        console.error("Error parsing saved session:", error);
+        localStorage.removeItem('wifiSessionInfo');
+      }
     }
   }, [isAdmin, navigate]);
 
@@ -54,22 +81,41 @@ const Index = () => {
       endTime.setDate(endTime.getDate() + selectedPackage.duration);
     }
     
+    const sessionInfo = {
+      package: selectedPackage,
+      startTime: startTime,
+      endTime: endTime
+    };
+    
     setShowPaymentModal(false);
     toast({
       title: "Success",
       description: "Your payment was successful. Enjoy your WiFi access!",
     });
     
+    // Update active session info locally
+    setActiveSessionInfo(sessionInfo);
+    
     // Navigate to active session page with session info
     navigate('/active-session', { 
       state: { 
-        sessionInfo: {
-          package: selectedPackage,
-          startTime: startTime,
-          endTime: endTime
-        }
+        sessionInfo: sessionInfo
       }
     });
+  };
+
+  const handleViewSession = () => {
+    if (activeSessionInfo) {
+      navigate('/active-session', { 
+        state: { 
+          sessionInfo: activeSessionInfo
+        }
+      });
+    }
+  };
+
+  const isPackageActive = (pkg: Package) => {
+    return activeSessionInfo !== null && activeSessionInfo.package.id === pkg.id;
   };
 
   return (
@@ -120,7 +166,9 @@ const Index = () => {
               <PackageCard
                 key={pkg.id}
                 package={pkg}
+                isActive={isPackageActive(pkg)}
                 onPurchase={() => handleSelectPackage(pkg)}
+                onViewSession={handleViewSession}
               />
             ))}
           </section>

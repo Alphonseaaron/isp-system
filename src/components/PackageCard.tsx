@@ -8,15 +8,19 @@ import { Button } from "@/components/ui/button";
 interface PackageCardProps {
   package: Package;
   isSelected?: boolean;
+  isActive?: boolean;
   onSelect?: (pkg: Package) => void;
   onPurchase?: (pkg: Package) => void;
+  onViewSession?: () => void;
 }
 
 const PackageCard = ({
   package: pkg,
   isSelected = false,
+  isActive = false,
   onSelect,
   onPurchase,
+  onViewSession,
 }: PackageCardProps) => {
   // Guard clause to prevent errors when pkg is undefined
   if (!pkg) {
@@ -47,13 +51,18 @@ const PackageCard = ({
       )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={() => onSelect && onSelect(pkg)}
+      onClick={() => !isActive && onSelect && onSelect(pkg)}
     >
       {pkg.popular && (
         <div className="absolute -top-3 right-4 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-white">
           Popular
         </div>
       )}
+      
+      {isActive && (
+        <div className="absolute top-3 right-3 h-3 w-3 rounded-full bg-green-500 ring-2 ring-green-200"></div>
+      )}
+      
       <div className="mb-4 text-xl font-bold text-foreground">{pkg.name}</div>
       <div className="mb-4 flex items-baseline">
         <span className="text-3xl font-bold text-primary">KSH {pkg.price}</span>
@@ -74,6 +83,14 @@ const PackageCard = ({
           onClick={() => onPurchase && onPurchase(pkg)}
         >
           Purchase
+        </Button>
+      ) : isActive ? (
+        <Button 
+          variant="outline" 
+          className="w-full"
+          onClick={onViewSession}
+        >
+          View Session
         </Button>
       ) : (
         <Button 
