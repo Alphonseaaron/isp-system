@@ -95,7 +95,7 @@ export const PackagesProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         
         if (firestorePackages && firestorePackages.length > 0) {
           // Convert Firestore data to Package type and ensure all properties exist
-          const typedPackages = firestorePackages.map(pkg => ({
+          const typedPackages = firestorePackages.map((pkg: any) => ({
             id: pkg.id,
             name: pkg.name || '',
             price: Number(pkg.price) || 0,
